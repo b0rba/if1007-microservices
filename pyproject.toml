@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "if1007-microservices"
+version = "0.1.0"
+description = ""
+authors = ["Vitor Martins <vmam@cin.ufpe.br>, Matheus Borba <mlbas@cin.ufpe.br>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "^1.8.1"
+email-validator = "^1.1.2"
+pytz = "^2021.1"
+requests = "^2.25.1"
+python-dateutil = "^2.8.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
