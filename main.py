@@ -1,5 +1,8 @@
 from os import environ
 
+from pika import spec
+from pika.adapters.blocking_connection import BlockingChannel
+
 from mail_manager import MailManager
 from queue_manager import QueueManager
 
@@ -13,8 +16,15 @@ if __name__ == '__main__':
     queue_manager = QueueManager(QUEUE_SERVICE_URL)
 
     channel = queue_manager.channel()
-    channel.queue_declare(queue='test')
+    channel.queue_declare(queue=QueueManager.QUEUE_NAME)
+
+    def dummy_consumer(msg: bytes):
+        print(msg.decode())
+
+    def callback(_: BlockingChannel, method: spec.Basic.Deliver, properties: spec.BasicProperties, body):
+        dummy_consumer(body)
+
+    channel.basic_consume(QueueManager.QUEUE_NAME, callback, auto_ack=True)
     channel.start_consuming()
-    channel.close()
 
     queue_manager.close()
