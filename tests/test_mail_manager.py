@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 from typing import List
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from dateutil.relativedelta import relativedelta
 
@@ -14,7 +14,7 @@ from tests import response_factory
 
 class TestMailManager(unittest.TestCase):
     def setUp(self) -> None:
-        self.url = 'https://api.sendinblue.com/v3/smtp/email'
+        self.url = 'https://api.sendinblue.com/v3'
         self.mail_manager = MailManager(
             api_key='xalala',
             url=self.url,
@@ -40,7 +40,7 @@ class TestMailManager(unittest.TestCase):
         res = self.mail_manager._send_email([self.to], template, params)
         self.assertTrue(res)
 
-        post.assert_called_once_with(self.url, headers={'api-key': self.mail_manager.api_key}, json=json)
+        post.assert_called_once_with(f'{self.url}/smtp/email', headers={'api-key': self.mail_manager.api_key}, json=json)
 
     @patch('mail_manager.MailManager._send_email', return_value=True)
     def test_send_confirmation_to_mentored(self, send_email):
@@ -110,6 +110,15 @@ class TestMailManager(unittest.TestCase):
             'MENTORED_NAME': self.metadata.mentored_name
         }
         send_email.assert_called_once_with([self.to], Template.NOTIFY_MENTOR_OF_MENTORED_LEAVING, params)
+
+    @patch('requests.get', return_value=response_factory.get_valid_account_response())
+    def test_get_available_credits(self, get: MagicMock):
+        mock_credits = 300
+        get.return_value = response_factory.get_valid_account_response(mock_credits)
+        res = self.mail_manager.get_available_credits()
+        self.assertEqual(mock_credits, res)
+
+        get.assert_called_once_with(f'{self.url}/account', headers={'api-key': self.mail_manager.api_key})
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@ class MailManager:
         }
         if params is not None:
             json['params'] = params
-        response = requests.post(self.url, headers={'api-key': self.api_key}, json=json)
+        response = requests.post(f'{self.url}/smtp/email', headers={'api-key': self.api_key}, json=json)
 
         if not 200 <= response.status_code < 300:
             print(str(response.json()))
@@ -75,3 +75,10 @@ class MailManager:
             'MENTORING_HOUR': mail_metadata.mentoring_datetime.strftime('%H:%M')
         }
         return self._send_email([to], Template.NOTIFY_MENTOR_OF_MENTORED_LEAVING, params)
+
+    def get_available_credits(self):
+        response = requests.get(f'{self.url}/account', headers={'api-key': self.api_key})
+        if not 200 <= response.status_code < 300:
+            print(str(response.json()))
+            return
+        return next((item['credits'] for item in response.json()['plan'] if item['type'] == 'free'), 0)
