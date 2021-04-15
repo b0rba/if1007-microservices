@@ -16,7 +16,7 @@ if __name__ == '__main__':
     channel = queue_manager.channel()
     channel.queue_declare(queue=QueueManager.QUEUE_NAME, arguments={'x-max-priority': 255})
 
-    parser = argparse.ArgumentParser('producer')
+    parser = argparse.ArgumentParser('main_publisher')
     parser.add_argument('-n', dest='number_of_messages', default=1, help='The number of messages to generate', type=int)
     args = parser.parse_args()
 

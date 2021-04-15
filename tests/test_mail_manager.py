@@ -44,7 +44,7 @@ class TestMailManager(unittest.TestCase):
 
     @patch('mail_manager.MailManager._send_email', return_value=True)
     def test_send_confirmation_to_mentored(self, send_email):
-        res = self.mail_manager.send_confirmation_to_mentored(self.to, self.metadata)
+        res = self.mail_manager._send_confirmation_to_mentored(self.to, self.metadata)
         self.assertTrue(res)
 
         params = {
@@ -58,7 +58,7 @@ class TestMailManager(unittest.TestCase):
 
     @patch('mail_manager.MailManager._send_email', return_value=True)
     def test_send_confirmation_to_mentor(self, send_email):
-        res = self.mail_manager.send_confirmation_to_mentor(self.to, self.metadata)
+        res = self.mail_manager._send_confirmation_to_mentor(self.to, self.metadata)
         self.assertTrue(res)
 
         params = {
@@ -72,7 +72,7 @@ class TestMailManager(unittest.TestCase):
 
     @patch('mail_manager.MailManager._send_email', return_value=True)
     def test_notify_subscribed_users_not_selected(self, send_email):
-        res = self.mail_manager.notify_subscribed_users_not_selected(self.to, self.metadata)
+        res = self.mail_manager._notify_subscribed_users_not_selected(self.to, self.metadata)
         self.assertTrue(res)
 
         params = {
@@ -85,7 +85,7 @@ class TestMailManager(unittest.TestCase):
 
     @patch('mail_manager.MailManager._send_email', return_value=True)
     def test_notify_subscribed_users_of_mentoring_canceled(self, send_email):
-        res = self.mail_manager.notify_subscribed_users_of_mentoring_canceled(self.to, self.metadata)
+        res = self.mail_manager._notify_subscribed_users_of_mentoring_canceled(self.to, self.metadata)
         self.assertTrue(res)
 
         params = {
@@ -99,7 +99,7 @@ class TestMailManager(unittest.TestCase):
 
     @patch('mail_manager.MailManager._send_email', return_value=True)
     def test_notify_mentor_of_mentored_leaving(self, send_email):
-        res = self.mail_manager.notify_mentor_of_mentored_leaving(self.to, self.metadata)
+        res = self.mail_manager._notify_mentor_of_mentored_leaving(self.to, self.metadata)
         self.assertTrue(res)
 
         params = {
@@ -119,6 +119,86 @@ class TestMailManager(unittest.TestCase):
         self.assertEqual(mock_credits, res)
 
         get.assert_called_once_with(f'{self.url}/account', headers={'api-key': self.mail_manager.api_key})
+
+    @patch('mail_manager.MailManager._send_confirmation_to_mentored')
+    @patch('mail_manager.MailManager._send_confirmation_to_mentor')
+    @patch('mail_manager.MailManager._notify_subscribed_users_not_selected')
+    @patch('mail_manager.MailManager._notify_subscribed_users_of_mentoring_canceled')
+    @patch('mail_manager.MailManager._notify_mentor_of_mentored_leaving')
+    def test_send_mail_confirmation_to_mentored(
+            self, _notify_mentor_of_mentored_leaving, _notify_subscribed_users_of_mentoring_canceled,
+            _notify_subscribed_users_not_selected, _send_confirmation_to_mentor, _send_confirmation_to_mentored):
+        template = Template.CONFIRMATION_TO_MENTORED
+        self.mail_manager.send_mail(self.to, self.metadata, template)
+        _send_confirmation_to_mentored.assert_called_once_with(self.to, self.metadata)
+        _send_confirmation_to_mentor.assert_not_called()
+        _notify_subscribed_users_not_selected.assert_not_called()
+        _notify_subscribed_users_of_mentoring_canceled.assert_not_called()
+        _notify_mentor_of_mentored_leaving.assert_not_called()
+
+    @patch('mail_manager.MailManager._send_confirmation_to_mentored')
+    @patch('mail_manager.MailManager._send_confirmation_to_mentor')
+    @patch('mail_manager.MailManager._notify_subscribed_users_not_selected')
+    @patch('mail_manager.MailManager._notify_subscribed_users_of_mentoring_canceled')
+    @patch('mail_manager.MailManager._notify_mentor_of_mentored_leaving')
+    def test_send_mail_confirmation_to_mentor(
+            self, _notify_mentor_of_mentored_leaving, _notify_subscribed_users_of_mentoring_canceled,
+            _notify_subscribed_users_not_selected, _send_confirmation_to_mentor, _send_confirmation_to_mentored):
+        template = Template.CONFIRMATION_TO_MENTOR
+        self.mail_manager.send_mail(self.to, self.metadata, template)
+        _send_confirmation_to_mentored.assert_not_called()
+        _send_confirmation_to_mentor.assert_called_once_with(self.to, self.metadata)
+        _notify_subscribed_users_not_selected.assert_not_called()
+        _notify_subscribed_users_of_mentoring_canceled.assert_not_called()
+        _notify_mentor_of_mentored_leaving.assert_not_called()
+
+    @patch('mail_manager.MailManager._send_confirmation_to_mentored')
+    @patch('mail_manager.MailManager._send_confirmation_to_mentor')
+    @patch('mail_manager.MailManager._notify_subscribed_users_not_selected')
+    @patch('mail_manager.MailManager._notify_subscribed_users_of_mentoring_canceled')
+    @patch('mail_manager.MailManager._notify_mentor_of_mentored_leaving')
+    def test_send_mail_notify_subscribed_users_not_selected(
+            self, _notify_mentor_of_mentored_leaving, _notify_subscribed_users_of_mentoring_canceled,
+            _notify_subscribed_users_not_selected, _send_confirmation_to_mentor, _send_confirmation_to_mentored):
+        template = Template.NOTIFY_SUBSCRIBED_USERS_NOT_SELECTED
+        self.mail_manager.send_mail(self.to, self.metadata, template)
+        _send_confirmation_to_mentored.assert_not_called()
+        _send_confirmation_to_mentor.assert_not_called()
+        _notify_subscribed_users_not_selected.assert_called_once_with(self.to, self.metadata)
+        _notify_subscribed_users_of_mentoring_canceled.assert_not_called()
+        _notify_mentor_of_mentored_leaving.assert_not_called()
+
+    @patch('mail_manager.MailManager._send_confirmation_to_mentored')
+    @patch('mail_manager.MailManager._send_confirmation_to_mentor')
+    @patch('mail_manager.MailManager._notify_subscribed_users_not_selected')
+    @patch('mail_manager.MailManager._notify_subscribed_users_of_mentoring_canceled')
+    @patch('mail_manager.MailManager._notify_mentor_of_mentored_leaving')
+    def test_send_mail_notify_subscribed_users_of_mentoring_canceled(
+            self, _notify_mentor_of_mentored_leaving, _notify_subscribed_users_of_mentoring_canceled,
+            _notify_subscribed_users_not_selected, _send_confirmation_to_mentor, _send_confirmation_to_mentored):
+        template = Template.NOTIFY_SUBSCRIBED_USERS_MENTORING_CANCELED
+        self.mail_manager.send_mail(self.to, self.metadata, template)
+        _send_confirmation_to_mentored.assert_not_called()
+        _send_confirmation_to_mentor.assert_not_called()
+        _notify_subscribed_users_not_selected.assert_not_called()
+        _notify_subscribed_users_of_mentoring_canceled.assert_called_once_with(self.to, self.metadata)
+        _notify_mentor_of_mentored_leaving.assert_not_called()
+
+    @patch('mail_manager.MailManager._send_confirmation_to_mentored')
+    @patch('mail_manager.MailManager._send_confirmation_to_mentor')
+    @patch('mail_manager.MailManager._notify_subscribed_users_not_selected')
+    @patch('mail_manager.MailManager._notify_subscribed_users_of_mentoring_canceled')
+    @patch('mail_manager.MailManager._notify_mentor_of_mentored_leaving')
+    def test_send_mail_notify_mentor_of_mentored_leaving(
+            self, _notify_mentor_of_mentored_leaving, _notify_subscribed_users_of_mentoring_canceled,
+            _notify_subscribed_users_not_selected, _send_confirmation_to_mentor, _send_confirmation_to_mentored):
+        template = Template.NOTIFY_MENTOR_OF_MENTORED_LEAVING
+        self.mail_manager.send_mail(self.to, self.metadata, template)
+        _send_confirmation_to_mentored.assert_not_called()
+        _send_confirmation_to_mentor.assert_not_called()
+        _notify_subscribed_users_not_selected.assert_not_called()
+        _notify_subscribed_users_of_mentoring_canceled.assert_not_called()
+        _notify_mentor_of_mentored_leaving.assert_called_once_with(self.to, self.metadata)
 
 
 if __name__ == '__main__':
