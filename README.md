@@ -1,7 +1,7 @@
 # if1007-microservices
 
-# Producer
+# Publisher
 
-To produce 5 messages, run:
+To publish 5 messages, run:
 
-`python producer.py -n 5`
+`python main_publisher.py -n 5`

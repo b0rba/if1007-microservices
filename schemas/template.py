@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Template(Enum):
+class Template(int, Enum):
     CONFIRMATION_TO_MENTOR = 7
     CONFIRMATION_TO_MENTORED = 9
     NOTIFY_SUBSCRIBED_USERS_NOT_SELECTED = 10

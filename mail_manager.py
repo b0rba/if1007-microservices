@@ -27,7 +27,7 @@ class MailManager:
             return False
         return True
 
-    def send_confirmation_to_mentored(self, to: Recipient, mail_metadata: MailParams):
+    def _send_confirmation_to_mentored(self, to: Recipient, mail_metadata: MailParams):
         params = {
             'MENTOR_NAME': mail_metadata.mentor_name,
             'MENTORING_DATE': mail_metadata.mentoring_datetime.strftime('%d/%m/%Y'),
@@ -37,7 +37,7 @@ class MailManager:
         }
         return self._send_email([to], Template.CONFIRMATION_TO_MENTORED, params)
 
-    def send_confirmation_to_mentor(self, to: Recipient, mail_metadata: MailParams):
+    def _send_confirmation_to_mentor(self, to: Recipient, mail_metadata: MailParams):
         params = {
             'MENTOR_NAME': mail_metadata.mentor_name,
             'MENTORING_DATE': mail_metadata.mentoring_datetime.strftime('%d/%m/%Y'),
@@ -47,7 +47,7 @@ class MailManager:
         }
         return self._send_email([to], Template.CONFIRMATION_TO_MENTOR, params)
 
-    def notify_subscribed_users_not_selected(self, to: Recipient, mail_metadata: MailParams):
+    def _notify_subscribed_users_not_selected(self, to: Recipient, mail_metadata: MailParams):
         params = {
             'MENTOR_NAME': mail_metadata.mentor_name,
             'MENTORING_DATE': mail_metadata.mentoring_datetime.strftime('%d/%m/%Y'),
@@ -56,7 +56,7 @@ class MailManager:
         }
         return self._send_email([to], Template.NOTIFY_SUBSCRIBED_USERS_NOT_SELECTED, params)
 
-    def notify_subscribed_users_of_mentoring_canceled(self, to: Recipient, mail_metadata: MailParams):
+    def _notify_subscribed_users_of_mentoring_canceled(self, to: Recipient, mail_metadata: MailParams):
         params = {
             'MENTOR_NAME': mail_metadata.mentor_name,
             'MENTOR_ID': mail_metadata.mentor_id,
@@ -66,7 +66,7 @@ class MailManager:
         }
         return self._send_email([to], Template.NOTIFY_SUBSCRIBED_USERS_MENTORING_CANCELED, params)
 
-    def notify_mentor_of_mentored_leaving(self, to: Recipient, mail_metadata: MailParams):
+    def _notify_mentor_of_mentored_leaving(self, to: Recipient, mail_metadata: MailParams):
         params = {
             'MENTOR_NAME': mail_metadata.mentor_name,
             'MENTORED_NAME': mail_metadata.mentored_name,
@@ -82,3 +82,16 @@ class MailManager:
             print(str(response.json()))
             return
         return next((item['credits'] for item in response.json()['plan'] if item['type'] == 'free'), 0)
+
+    def send_mail(self, recipient: Recipient, mail_params: MailParams, template: Template):
+        if template is Template.CONFIRMATION_TO_MENTORED:
+            return self._send_confirmation_to_mentored(recipient, mail_params)
+        if template is Template.CONFIRMATION_TO_MENTOR:
+            return self._send_confirmation_to_mentor(recipient, mail_params)
+        if template is Template.NOTIFY_SUBSCRIBED_USERS_NOT_SELECTED:
+            return self._notify_subscribed_users_not_selected(recipient, mail_params)
+        if template is Template.NOTIFY_SUBSCRIBED_USERS_MENTORING_CANCELED:
+            return self._notify_subscribed_users_of_mentoring_canceled(recipient, mail_params)
+        if template is Template.NOTIFY_MENTOR_OF_MENTORED_LEAVING:
+            return self._notify_mentor_of_mentored_leaving(recipient, mail_params)
+        raise Exception('Not a valid template')
