@@ -10,7 +10,7 @@ TIMEZONE = 'America/Recife'
 
 class MailParams(BaseModel):
     mentor_name: str
-    mentoring_datetime: Optional[datetime]
+    mentoring_datetime: datetime
     mentored_name: Optional[str]
     mentor_id: Optional[str]
     mentored_id: Optional[str]
