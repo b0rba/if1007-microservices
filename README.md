@@ -2,6 +2,6 @@
 
 # Producer
 
-To produce a message, run:
+To produce 5 messages, run:
 
-`python producer_dummy.py -m "Your message here"`
+`python producer.py -n 5`
