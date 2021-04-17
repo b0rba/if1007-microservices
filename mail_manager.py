@@ -94,4 +94,5 @@ class MailManager:
             return self._notify_subscribed_users_of_mentoring_canceled(recipient, mail_params)
         if template is Template.NOTIFY_MENTOR_OF_MENTORED_LEAVING:
             return self._notify_mentor_of_mentored_leaving(recipient, mail_params)
-        raise Exception('Not a valid template')
+        return False
+        # raise Exception('Not a valid template')
