@@ -1,17 +1,37 @@
 import json
 
+from pika.adapters.blocking_connection import BlockingChannel
+
 from mail_manager import MailManager
+from queue_manager import QueueManager
 from schemas.queue_payload import QueuePayload
 
 
 class Consumer:
-    def __init__(self, mail_manager: MailManager):
+    def __init__(self, mail_manager: MailManager, queue_channel: BlockingChannel, mails_per_hour: int):
         self.mail_manager = mail_manager
+        self.queue_channel = queue_channel
+        self.mails_per_hour = mails_per_hour
 
-    def consume(self, queue_payload: bytes):
-        try:
-            payload = QueuePayload(**json.loads(queue_payload))
-            print(payload.dict())
+    def consume_mails_per_hour(self):
+        self.queue_channel.queue_declare(queue=QueueManager.QUEUE_NAME, arguments={'x-max-priority': 255})
+
+        for i in range(0, self.mails_per_hour):
+            method, properties, body = self.queue_channel.basic_get(QueueManager.QUEUE_NAME, auto_ack=True)
+            if body is None:
+                continue
+
+            payload = QueuePayload(**json.loads(body))
             # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
-        except Exception as e:
-            print(e)
+
+    def consume_send_last_mails(self):
+        self.queue_channel.queue_declare(queue=QueueManager.QUEUE_NAME, arguments={'x-max-priority': 255})
+        available_credits = self.mail_manager.get_available_credits()
+
+        for i in range(0, available_credits):
+            method, properties, body = self.queue_channel.basic_get(QueueManager.QUEUE_NAME, auto_ack=True)
+            if body is None:
+                continue
+
+            payload = QueuePayload(**json.loads(body))
+            # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
