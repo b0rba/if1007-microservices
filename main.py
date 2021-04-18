@@ -1,5 +1,6 @@
 from os import environ
 
+import prometheus_client
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app import app
@@ -9,11 +10,12 @@ from queue_manager import QueueManager
 
 if __name__ == '__main__':
     scheduler = BackgroundScheduler()
+    prometheus_client.start_http_server(5000)
 
     SENDINBLUE_URL = environ.get('SENDINBLUE_URL', 'https://api.sendinblue.com/v3')
     SENDINBLUE_API_KEY = environ.get('SENDINBLUE_API_KEY', '')
     SENDINBLUE_MAILS_PER_HOUR = environ.get('SENDINBLUE_MAILS_PER_HOUR', 12)
-    QUEUE_SERVICE_URL = environ.get('QUEUE_SERVICE_URL', 'amqp://guest:guest@localhost:5672/%2f')
+    QUEUE_SERVICE_URL = environ.get('QUEUE_SERVICE_URL', 'amqp://guest:guest@rabbitmq:5672/%2f')
 
     mail_manager = MailManager(SENDINBLUE_API_KEY, SENDINBLUE_URL)
     queue_manager = QueueManager(QUEUE_SERVICE_URL)

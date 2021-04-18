@@ -3,6 +3,7 @@ from typing import Dict, List
 import requests
 from dateutil.relativedelta import relativedelta
 
+from metrics.topics import MAILS_FAIL, MAILS_SENT
 from schemas.mail_params import MailParams
 from schemas.recipient import Recipient
 from schemas.template import Template
@@ -23,8 +24,10 @@ class MailManager:
         response = requests.post(f'{self.url}/smtp/email', headers={'api-key': self.api_key}, json=json)
 
         if not 200 <= response.status_code < 300:
+            MAILS_FAIL.inc()
             print(str(response.json()))
             return False
+        MAILS_SENT.inc()
         return True
 
     def _send_confirmation_to_mentored(self, to: Recipient, mail_metadata: MailParams):
