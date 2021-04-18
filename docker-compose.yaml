@@ -6,13 +6,31 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-    # This allows us to view the files directly in their local folder structure instead of having to connect to the container
-    # volumes:
-    #   - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-    #   - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
     networks:
-      - rabbitmq_go_net
+      - microdepressivos_networking
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert.rules:/etc/prometheus/alert.rules
+    ports:
+      - 9090:9090
+    networks:
+      - microdepressivos_networking
+  app:
+    build:
+      context: .
+    restart: on-failure
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - 5000:5000
+    networks:
+      - microdepressivos_networking
+    depends_on:
+      - rabbitmq
+      - prometheus
 
 networks:
-  rabbitmq_go_net:
-    driver: bridge
+  microdepressivos_networking: {}

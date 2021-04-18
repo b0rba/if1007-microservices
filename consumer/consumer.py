@@ -3,6 +3,7 @@ import json
 from pika.adapters.blocking_connection import BlockingChannel
 
 from mail_manager import MailManager
+from metrics.topics import QUEUE_CONSUMER_BY_TEMPLATE, QUEUE_CONSUMER_BY_PRIORITY
 from queue_manager import QueueManager
 from schemas.queue_payload import QueuePayload
 
@@ -22,6 +23,10 @@ class Consumer:
                 continue
 
             payload = QueuePayload(**json.loads(body))
+
+            QUEUE_CONSUMER_BY_TEMPLATE.labels(payload.template.value).inc()
+            QUEUE_CONSUMER_BY_PRIORITY.labels(properties.priority).inc()
+
             # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
 
     def consume_send_last_mails(self):
@@ -34,4 +39,8 @@ class Consumer:
                 continue
 
             payload = QueuePayload(**json.loads(body))
+
+            QUEUE_CONSUMER_BY_TEMPLATE.labels(payload.template.value).inc()
+            QUEUE_CONSUMER_BY_PRIORITY.labels(properties.priority).inc()
+
             # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)

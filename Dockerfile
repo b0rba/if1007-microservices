@@ -23,4 +23,6 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
-CMD ["python", "main.py"]
+RUN chmod +x /app/wait-for-it.sh
+
+CMD ["./wait-for-it.sh", "rabbitmq:5672", "--", "python", "main.py"]
