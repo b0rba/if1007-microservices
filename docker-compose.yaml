@@ -21,6 +21,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: dev.Dockerfile
     restart: on-failure
     environment:
       PYTHONUNBUFFERED: 1
