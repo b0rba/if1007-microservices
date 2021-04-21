@@ -20,8 +20,7 @@ if __name__ == '__main__':
     mail_manager = MailManager(SENDINBLUE_API_KEY, SENDINBLUE_URL)
     queue_manager = QueueManager(QUEUE_SERVICE_URL)
 
-    channel = queue_manager.channel()
-    consumer = Consumer(mail_manager, channel, SENDINBLUE_MAILS_PER_HOUR)
+    consumer = Consumer(mail_manager, queue_manager, SENDINBLUE_MAILS_PER_HOUR)
 
     scheduler.add_job(consumer.consume_mails_per_hour, 'cron',
                       year='*', month='*', day='*', week='*', day_of_week='*', hour='*', minute=0, second=0,
