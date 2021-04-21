@@ -38,11 +38,11 @@ The basic MVP features were a basic consumer the could ready from a priority que
 
 To understand our business logic it is better to explain what kind of email we deal with, currently they are email about the status of a Mentoring, could be the confirmation that you were selected, or that the Mentor will not be able to attend the Mentoring, and all of that has a a mentoring datetime, and we use that datetime to determine the priority of the mail.
 
-The first part is in the producer, Acaso, and publish on queue with a priority equivalent on the urgency, or how close is the mentoring. 
+The first part is in the producer, Acaso, and publish on queue with a priority equivalent on the urgency, or how close is the mentoring.
 
-We had a consumer that were always listening to the queue, and if there was a mail that had a priority of 200(current day), it was send it immediately, if not, it was send back to the queue. We can see clearly that this is not the best approach, not only create a loop, but if we read instantly the priority logic from the rabbitmq serves nothing. 
+We had a consumer that were always listening to the queue, and if there was a mail that had a priority of 200(current day), it was send it immediately, if not, it was send back to the queue. We can see clearly that this is not the best approach, not only create a loop, but if we read instantly the priority logic from the rabbitmq serves nothing.
 
-So we change that, and now the logic is, we can only send 300 email per day, but we can not spend all our emial in the first batch because if a more importante email appear, it would be lost. 
+So we change that, and now the logic is, we can only send 300 email per day, but we can not spend all our emial in the first batch because if a more importante email appear, it would be lost.
 
 So every hour we read 12 mails from the queue, which give the rabbitmq time to sort the payload based on priority, in a way that we consume the most urgent first every time, and at the end of the day, we send the rest of email that we can, also in order.
 
@@ -159,7 +159,68 @@ First thing, you need to have [Dokku](https://dokku.com/) installed and configur
     dokku rabbitmq:expose rabbitmq 5672 4369 35197 15672
     ```
 
-1. Now let's setup the prometheus service. Pull the docker image:
+1. Now let's setup the prometheus service. Create the app:
+
+    ```bash
+    dokku apps:create prometheus
+    ```
+
+1. Add a proxy for this service:
+
+    ```bash
+    dokku proxy:ports-add prometheus http:80:9090
+    ```
+
+1. Set the volume mounts for persistent storage:
+
+    ```bash
+    mkdir -p /var/lib/dokku/data/storage/prometheus/{config,data}
+    touch /var/lib/dokku/data/storage/prometheus/config/{alert.rules,prometheus.yml}
+    chown -R nobody:nogroup /var/lib/dokku/data/storage/prometheus
+
+    dokku storage:mount prometheus /var/lib/dokku/data/storage/prometheus/config:/etc/prometheus
+    dokku storage:mount prometheus /var/lib/dokku/data/storage/prometheus/data:/prometheus
+    ```
+1. Set the prometheus configuration:
+
+    ```bash
+    dokku config:set --no-restart prometheus DOKKU_DOCKERFILE_START_CMD="--config.file=/etc/prometheus/prometheus.yml
+    --storage.tsdb.path=/prometheus
+    --web.console.libraries=/usr/share/prometheus/console_libraries
+    --web.console.templates=/usr/share/prometheus/consoles
+    --web.enable-lifecycle
+    --storage.tsdb.no-lockfile"
+    ```
+
+1. Create the configuration file at localtion `/var/lib/dokku/data/storage/prometheus/config/prometheus.yml`:
+
+    ```yml
+    # my global config
+    global:
+      scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+      evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+      # scrape_timeout is set to the global default (10s).
+    alerting:
+      alertmanagers:
+      - static_configs:
+        - targets:
+          - alertmanager:9093
+    scrape_configs:
+      - job_name: 'prometheus'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: ['localhost:9090']
+      - job_name: 'monitoring'
+        metrics_path: '/'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['<server-ip>:5000']
+
+    ```
+
+    - Replace `<server-ip>` on the target for your real server IP.
+
+1. Pull the docker image:
 
     ```bash
     sudo docker pull prom/prometheus
