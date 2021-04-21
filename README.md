@@ -1,36 +1,65 @@
-# if1007-microservices
+# IF1007 - Microservices
 
-## Escolha do cenário
+## Big idea
 
-(Descrever qual o cenário escolhido, motivações, etc)
+We have a application called Acaso(aca.so), which is a monolithic and since we all work together there, make sense to do something with it, it is an environment that we are familiar, we have the autonomy to make decision and mold the application, and in the future it is expected to migrate de monolithic to a microservices arcitcherute, so it make sense.
 
-## Oportunidades
+## Opportunities
 
-(Trazer do notion pra cá quais as oportunidades que mapeamos, bem como os pontos positivos, negativos e as opotunidades de cada uma)
+In Acaso there are some improvement that can be maid, and we list 4 possible services that we could extract:
+- Mail Service
+- Logging Service
+- Payment
+- Chat
 
-## Oportunidade escolhida
+If we think about feature, the chat is one there is highly needed but is to complex, since there is nothing implemented in the Main application already, same thing with payment.
 
-(Descrever qual das oportunidades acima foi escolhida, como foi feito o processo de escolha e o porquê da escolha)
+When we thought about logging, at first was a good idea, but we struggle to find more impact on top of what we already have with the monitoring service on AWS.
 
-### Recursos necessários
+Mail Service on the other hand, we had a well define scope, it was simple of extracting from the application compaired to the other. The downs sides were that we need to work on the application to make it ready for the change, we wouldn't use right way on Acaso, and dependeing on that duration, a big part of our work could become absolete.
 
-(Descrever o que pensamos inicialmente que seriam os recursos necessários, pode-se consular o strateegia para entender o que respondemos a esta pergunta)
+## Target Opportunity
 
-## Produção
+Based on the previous topic we discussed and decide to move with the Mail Service, it had a consise scope and there was opportunity to explore logging within the application.
 
-(Descrever a metodolodia utilizada para planejamento das atividades, qual era a ideia de MVP que tínhamos, e como se deu o processo de produção da solução)
+## Recursos necessários
 
-### Definição da regra de negócio
+We make the Acaso application to be a producer, that send to a priority queue on RabbitMQ, a consumer, that can read from the queue, deserialize, and pass the information to a MailManager that communicate with Sendiblue API.
 
-(Pode falar da primeira abordagem pensada, e em como foi invalidade no momento da implementação, exigindo pensar numa nova abordagem)
+## Development
 
-## Experimento
+We use Scrum to map issues and define sprints. We put everything on Github projects(https://github.com/b0rba/if1007-microservices/projects/1).
 
-(Como fizemos para testar a solução)
+The basic MVP features were a basic consumer the could ready from a priority queue, deserialize, pass the payload to the MailManager, that can interpret it and call the Sendinblue Api to send the email correctly.
 
-## Melhorias
+## Business Logic Discovery
 
-(Aqui podemos identificar quais são os pontos fracos da solução e como ela pode ser melhorada)
+To understand our business logic it is better to explain what kind of email we deal with, currently they are email about the status of a Mentoring, could be the confirmation that you were selected, or that the Mentor will not be able to attend the Mentoring, and all of that has a a mentoring datetime, and we use that datetime to determine the priority of the mail.
+
+The first part is in the producer, Acaso, and publish on queue with a priority equivalent on the urgency, or how close is the mentoring. 
+
+We had a consumer that were always listening to the queue, and if there was a mail that had a priority of 200(current day), it was send it immediately, if not, it was send back to the queue. We can see clearly that this is not the best approach, not only create a loop, but if we read instantly the priority logic from the rabbitmq serves nothing. 
+
+So we change that, and now the logic is, we can only send 300 email per day, but we can not spend all our emial in the first batch because if a more importante email appear, it would be lost. 
+
+So every hour we read 12 mails from the queue, which give the rabbitmq time to sort the payload based on priority, in a way that we consume the most urgent first every time, and at the end of the day, we send the rest of email that we can, also in order.
+
+## Experiment
+
+We have a prometheus monitoring our application, so we can see each payload that is consumed from the queue, and each mail that was successfully sent it or not.
+
+So we produced 400 mocked emails and watched though out the day if the flow was correct.
+
+## Improvements
+
+So what happens if there is a day with a lot of priority mails and we cant send all of them, we have a topic on prometheus about the mails that fails, and we can see the priority, the idea is to notify the manager so he can upgrade the sendinblue data plan or just ignore it. But, this alert is not implemented yet.
+
+We could send a mail from a monitoring that have already passed, in theory the Acaso application will guarantee that this would not happened but, there is no verification on the mail manager side.
+
+If the mail is not send it, because of a simple error, a network error, there is not a backup pipeline to try to resend it, it is lost, but it appears on prometheus.
+
+We create this logic because we can only send 300 mails per day, but when comes the time that we need to upgrade de data plan and we do not have this limit, we basically have to make a new business logic to consume from the queue and send it no the Mail Manager.
+
 
 ---
 
