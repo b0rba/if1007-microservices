@@ -18,12 +18,16 @@ services:
       - 9090:9090
     networks:
       - microdepressivos_networking
-  app:
+  consumer:
     build:
       context: .
     restart: on-failure
     environment:
       PYTHONUNBUFFERED: 1
+      SENDINBLUE_URL: 'https://api.sendinblue.com/v3'
+      SENDINBLUE_API_KEY: ''
+      SENDINBLUE_MAILS_PER_HOUR: 12
+      QUEUE_SERVICE_URL: 'amqp://guest:guest@rabbitmq:5672/%2f'
     ports:
       - 5000:5000
     networks:

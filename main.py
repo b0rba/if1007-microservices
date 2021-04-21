@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     SENDINBLUE_URL = environ.get('SENDINBLUE_URL', 'https://api.sendinblue.com/v3')
     SENDINBLUE_API_KEY = environ.get('SENDINBLUE_API_KEY', '')
-    SENDINBLUE_MAILS_PER_HOUR = environ.get('SENDINBLUE_MAILS_PER_HOUR', 12)
+    SENDINBLUE_MAILS_PER_HOUR = int(environ.get('SENDINBLUE_MAILS_PER_HOUR', 12))
     QUEUE_SERVICE_URL = environ.get('QUEUE_SERVICE_URL', 'amqp://guest:guest@rabbitmq:5672/%2f')
 
     mail_manager = MailManager(SENDINBLUE_API_KEY, SENDINBLUE_URL)

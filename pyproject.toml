@@ -15,6 +15,7 @@ pika = "^1.2.0"
 Faker = "^8.1.0"
 APScheduler = "^3.7.0"
 prometheus-client = "^0.10.1"
+fastapi = "^0.63.0"
 
 [tool.poetry.dev-dependencies]
 
