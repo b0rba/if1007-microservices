@@ -17,6 +17,7 @@ FROM python:3.8.5-slim-buster
 WORKDIR /app
 
 ENV PYTHONPATH $PWD
+ENV PYTHONUNBUFFERED 1
 
 COPY --from=build /app/requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt

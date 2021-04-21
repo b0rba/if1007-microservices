@@ -1,15 +1,14 @@
 from os import environ
 
 import prometheus_client
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.background import BlockingScheduler
 
-from app import app
 from consumer.consumer import Consumer
 from mail_manager import MailManager
 
 
 if __name__ == '__main__':
-    scheduler = BackgroundScheduler()
+    scheduler = BlockingScheduler()
     prometheus_client.start_http_server(5000)
 
     SENDINBLUE_URL = environ.get('SENDINBLUE_URL', 'https://api.sendinblue.com/v3')
@@ -27,5 +26,5 @@ if __name__ == '__main__':
     scheduler.add_job(consumer.consume_send_last_mails, 'cron',
                       year='*', month='*', day='*', week='*', day_of_week='*', hour=23, minute=5, second=0,
                       id='last-mails')
+    print('Application started!')
     scheduler.start()
-    app.run()
