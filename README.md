@@ -22,9 +22,11 @@ Mail Service on the other hand, we had a well define scope, it was simple of ext
 
 Based on the previous topic we discussed and decide to move with the Mail Service, it had a consise scope and there was opportunity to explore logging within the application.
 
-## Recursos necessários
+## Necessary Resources
 
 We make the Acaso application to be a producer, that send to a priority queue on RabbitMQ, a consumer, that can read from the queue, deserialize, and pass the information to a MailManager that communicate with Sendiblue API.
+
+We will talk about
 
 ## Development
 
@@ -78,6 +80,10 @@ We create this logic because we can only send 300 mails per day, but when comes 
 ## External services
 
 - [Sendinblue](https://pt.sendinblue.com/) (email service)
+
+## Architecture
+
+![architecure](microservices_architecture.png)
 
 ## Mail Manager
 
