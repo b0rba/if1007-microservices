@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app import app
 from consumer.consumer import Consumer
 from mail_manager import MailManager
-from queue_manager import QueueManager
+
 
 if __name__ == '__main__':
     scheduler = BackgroundScheduler()
@@ -18,9 +18,8 @@ if __name__ == '__main__':
     QUEUE_SERVICE_URL = environ.get('QUEUE_SERVICE_URL', 'amqp://guest:guest@rabbitmq:5672/%2f')
 
     mail_manager = MailManager(SENDINBLUE_API_KEY, SENDINBLUE_URL)
-    queue_manager = QueueManager(QUEUE_SERVICE_URL)
 
-    consumer = Consumer(mail_manager, queue_manager, SENDINBLUE_MAILS_PER_HOUR)
+    consumer = Consumer(mail_manager, SENDINBLUE_MAILS_PER_HOUR, QUEUE_SERVICE_URL)
 
     scheduler.add_job(consumer.consume_mails_per_hour, 'cron',
                       year='*', month='*', day='*', week='*', day_of_week='*', hour='*', minute=0, second=0,

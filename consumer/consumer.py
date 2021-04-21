@@ -7,13 +7,14 @@ from schemas.queue_payload import QueuePayload
 
 
 class Consumer:
-    def __init__(self, mail_manager: MailManager, queue_manager: QueueManager, mails_per_hour: int):
+    def __init__(self, mail_manager: MailManager, mails_per_hour: int, queue_service_url: str):
         self.mail_manager = mail_manager
-        self.queue_manager = queue_manager
         self.mails_per_hour = mails_per_hour
+        self.queue_service_url = queue_service_url
 
     def consume_mails_per_hour(self):
-        queue_channel = self.queue_manager.channel()
+        queue_manager = QueueManager(self.queue_service_url)
+        queue_channel = queue_manager.channel()
         queue_channel.queue_declare(queue=QueueManager.QUEUE_NAME, arguments={'x-max-priority': 255})
 
         for i in range(0, self.mails_per_hour):
@@ -27,9 +28,11 @@ class Consumer:
             QUEUE_CONSUMER_BY_PRIORITY.labels(properties.priority).inc()
 
             # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
+        queue_manager.close()
 
     def consume_send_last_mails(self):
-        queue_channel = self.queue_manager.channel()
+        queue_manager = QueueManager(self.queue_service_url)
+        queue_channel = queue_manager.channel()
         queue_channel.queue_declare(queue=QueueManager.QUEUE_NAME, arguments={'x-max-priority': 255})
         available_credits = self.mail_manager.get_available_credits()
 
@@ -44,3 +47,4 @@ class Consumer:
             QUEUE_CONSUMER_BY_PRIORITY.labels(properties.priority).inc()
 
             # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
+        queue_manager.close()
