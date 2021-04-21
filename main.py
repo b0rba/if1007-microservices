@@ -24,11 +24,8 @@ if __name__ == '__main__':
     consumer = Consumer(mail_manager, channel, SENDINBLUE_MAILS_PER_HOUR)
 
     scheduler.add_job(consumer.consume_mails_per_hour, 'cron',
-                      year='*', month='*', day='*', week='*', day_of_week='*', hour='*', minute='*', second=0,
+                      year='*', month='*', day='*', week='*', day_of_week='*', hour='*', minute=0, second=0,
                       id='mails-every-hour')
-    # scheduler.add_job(consumer.consume_mails_per_hour, 'cron',
-    #                   year='*', month='*', day='*', week='*', day_of_week='*', hour='*', minute=0, second=0,
-    #                   id='mails-every-hour')
     scheduler.add_job(consumer.consume_send_last_mails, 'cron',
                       year='*', month='*', day='*', week='*', day_of_week='*', hour=23, minute=5, second=0,
                       id='last-mails')
