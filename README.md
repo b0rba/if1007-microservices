@@ -32,7 +32,7 @@ We will talk about
 
 We use Scrum to map issues and define sprints. We put everything on Github projects(https://github.com/b0rba/if1007-microservices/projects/1).
 
-The basic MVP features were a basic consumer the could ready from a priority queue, deserialize, pass the payload to the MailManager, that can interpret it and call the Sendinblue Api to send the email correctly.
+The basic MVP features were a basic consumer the could ready from a priority queue, deserialize, pass the payload to the MailManager, that can interpret it and call the Sendinblue API to send the email correctly.
 
 ## Business Logic Discovery
 
@@ -40,28 +40,33 @@ To understand our business logic it is better to explain what kind of email we d
 
 The first part is in the producer, Acaso, and publish on queue with a priority equivalent on the urgency, or how close is the mentoring.
 
-We had a consumer that were always listening to the queue, and if there was a mail that had a priority of 200(current day), it was send it immediately, if not, it was send back to the queue. We can see clearly that this is not the best approach, not only create a loop, but if we read instantly the priority logic from the rabbitmq serves nothing.
+We had a consumer that were always listening to the queue, and if there was a mail that had a priority of 200 (current day), it was send it immediately, if not, it was send back to the queue. We can see clearly that this is not the best approach, not only create a loop, but if we read instantly the priority logic from the rabbitmq serves nothing.
 
-So we change that, and now the logic is, we can only send 300 email per day, but we can not spend all our emial in the first batch because if a more importante email appear, it would be lost.
+So we change that, and now the logic is, we can only send 300 email per day, but we can not spend all our email in the first batch because if a more importante email appear, it would be lost.
 
 So every hour we read 12 mails from the queue, which give the rabbitmq time to sort the payload based on priority, in a way that we consume the most urgent first every time, and at the end of the day, we send the rest of email that we can, also in order.
 
 ## Experiment
 
-We have a prometheus monitoring our application, so we can see each payload that is consumed from the queue, and each mail that was successfully sent it or not.
+We have a prometheus monitoring our application, so we can see each payload that is consumed from the queue, and each email that was successfully sent it or not.
 
 So we produced 400 mocked emails and watched though out the day if the flow was correct.
 
 ## Improvements
 
-So what happens if there is a day with a lot of priority mails and we cant send all of them, we have a topic on prometheus about the mails that fails, and we can see the priority, the idea is to notify the manager so he can upgrade the sendinblue data plan or just ignore it. But, this alert is not implemented yet.
+So what happens if there is a day with a lot of priority mails and we cant send all of them, we have a topic on prometheus about the mails that fails, and we can see the priority, the idea is to notify the manager so it can upgrade the sendinblue data plan or just ignore it. But, this alert is not implemented yet.
 
 We could send a mail from a monitoring that have already passed, in theory the Acaso application will guarantee that this would not happened but, there is no verification on the mail manager side.
 
 If the mail is not send it, because of a simple error, a network error, there is not a backup pipeline to try to resend it, it is lost, but it appears on prometheus.
 
-We create this logic because we can only send 300 mails per day, but when comes the time that we need to upgrade de data plan and we do not have this limit, we basically have to make a new business logic to consume from the queue and send it no the Mail Manager.
+We create this logic because we can only send 300 mails per day, but when comes the time that we need to upgrade the data plan and we do not have this limit, we basically have to make a new business logic to consume from the queue and send it to the Mail Manager.
 
+
+## Demo
+
+- [Presentation 1](https://youtu.be/d13eIOX49Ws)
+- [Presentation 2](https://youtu.be/zeG1flYlTK8)
 
 ---
 
