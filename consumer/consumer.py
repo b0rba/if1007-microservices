@@ -27,7 +27,7 @@ class Consumer:
             QUEUE_CONSUMER_BY_TEMPLATE.labels(payload.template.value).inc()
             QUEUE_CONSUMER_BY_PRIORITY.labels(properties.priority).inc()
 
-            # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
+            self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
         queue_manager.close()
 
     def consume_send_last_mails(self):
@@ -46,5 +46,5 @@ class Consumer:
             QUEUE_CONSUMER_BY_TEMPLATE.labels(payload.template.value).inc()
             QUEUE_CONSUMER_BY_PRIORITY.labels(properties.priority).inc()
 
-            # self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
+            self.mail_manager.send_mail(payload.recipient, payload.mail_params, payload.template)
         queue_manager.close()

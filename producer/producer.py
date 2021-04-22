@@ -25,7 +25,7 @@ class Producer:
 
         recipient = Recipient(
             name=mentored_name,
-            email=self.fake.email()
+            email='vmam@cin.ufpe.br'
         )
         template = Template.CONFIRMATION_TO_MENTORED
         return QueuePayload(mail_params=mail_params, recipient=recipient, template=template)
@@ -41,7 +41,7 @@ class Producer:
 
         recipient = Recipient(
             name=mentor_name,
-            email=self.fake.email()
+            email='vmam@cin.ufpe.br'
         )
         template = Template.CONFIRMATION_TO_MENTOR
         return QueuePayload(mail_params=mail_params, recipient=recipient, template=template)
@@ -56,7 +56,7 @@ class Producer:
 
         recipient = Recipient(
             name=mentored_name,
-            email=self.fake.email()
+            email='vmam@cin.ufpe.br'
         )
         template = Template.NOTIFY_SUBSCRIBED_USERS_NOT_SELECTED
         return QueuePayload(mail_params=mail_params, recipient=recipient, template=template)
@@ -71,7 +71,7 @@ class Producer:
 
         recipient = Recipient(
             name=mentored_name,
-            email=self.fake.email()
+            email='vmam@cin.ufpe.br'
         )
         template = Template.NOTIFY_SUBSCRIBED_USERS_MENTORING_CANCELED
         return QueuePayload(mail_params=mail_params, recipient=recipient, template=template)
@@ -87,7 +87,7 @@ class Producer:
 
         recipient = Recipient(
             name=mentor_name,
-            email=self.fake.email()
+            email='vmam@cin.ufpe.br'
         )
         template = Template.NOTIFY_MENTOR_OF_MENTORED_LEAVING
         return QueuePayload(mail_params=mail_params, recipient=recipient, template=template)
