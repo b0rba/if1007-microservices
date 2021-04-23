@@ -62,6 +62,11 @@ If the mail is not send it, because of a simple error, a network error, there is
 
 We create this logic because we can only send 300 mails per day, but when comes the time that we need to upgrade the data plan and we do not have this limit, we basically have to make a new business logic to consume from the queue and send it to the Mail Manager.
 
+## Lesson Learned
+
+We learned about async communication with rabbitmq, it was interest to user a queue in a real application. The idea to look about business when thinking about migrating to microservice was really helpful, the decision about the mail manager was based that, not only about improving performance.
+
+Technically speaking, we use prometheus for the first time, it was difficult to make it work, but now we use it not only in this project, but in the actual "real world" application of Acaso, which is really cool, to actually use something that we first learn in this academic project.
 
 ## Demo
 
